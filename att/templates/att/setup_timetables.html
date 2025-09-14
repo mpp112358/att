@@ -1,0 +1,33 @@
+{% extends "att/base.html" %}
+
+{% block title %}Setup timetables{% endblock %}
+
+{% block content %}
+
+    <section id="courses-selector" class="section is-flex is-flex-direction-column">
+        <div id="courses-selector-header" class="box">
+            <div class="columns is-mobile">
+                <div class="column">
+                    <p class="control has-icons-left">
+                        <input class="input" type="text" placeholder="Search"/>
+                        <span class="icon is-left">
+                            <i class="fa-solid fa-search" aria-hidden="true"></i>
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div id="courses-scroll-container" class="columns px-4 courses-scroll-container">
+            <div class="column">
+                {% for course in object_list %}
+                    <a class="button is-fullwidth is-large course-button {% if course.pending_sessions %} is-warning {% else %} is-primary {% endif %}"
+                       href="{% url 'att:setup-timetable' course.id %}">
+                        {{ course.name }} ({{ course.pending_sessions }})
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+
+{% endblock %}

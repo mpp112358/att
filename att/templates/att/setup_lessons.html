@@ -1,0 +1,19 @@
+{% extends 'att/base.html' %}
+
+{% block title %}Setup lessons{% endblock %}
+
+{% block content %}
+
+    <section class="panel is-link">
+        <p class="panel-heading">Generate lessons</p>
+        <div class="panel-block">
+            <form method="post" action="{% url 'att:generate-lessons' %}">
+                {% csrf_token %}
+                <button id="generate-lessons" type="submit" class="button is-primary is-fullwidth">
+                    Generate
+                </button>
+            </form>
+        </div>
+    </section>
+
+{% endblock %}

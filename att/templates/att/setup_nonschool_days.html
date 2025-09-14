@@ -1,0 +1,26 @@
+{% extends "att/base.html" %}
+
+{% block title %}Setup non-school days{% endblock %}
+
+{% block content %}
+
+    <section id="nonschooldays-list" class="section is-flex is-flex-direction-column">
+        <div id="nonschooldays-scroll-container" class="columns px-4 nonschooldays-scroll-container">
+            <div class="column">
+                {% for nonschoolday in object_list %}
+                    <div class="field has-addons">
+                        <p class="control">
+                            <input class="date" type="date">
+                        </p>
+                        <p class="control">
+                            <button class="button">Delete</button>
+                        </p>
+                    </div>
+                {% empty %}
+                    Class every day.
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+{% endblock %}

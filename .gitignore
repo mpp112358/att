@@ -1,0 +1,41 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Environment
+.venv
+.venv/
+venv/
+env/
+.env
+
+# OS/editor
+.DS_Store
+*.swp
+.vscode/
+.idea/
+
+# Testing
+.pytest_cache/
+.coverage
+*.log
+
+# Build artifacts
+*.egg-info/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Ignore SQLite DB if you don't want to commit it
+*.sqlite3
+db.json
+
+# Ignore static/media if they’re generated or large
+# staticfiles/
+# media/
+
+*.pdf

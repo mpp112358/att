@@ -1,0 +1,90 @@
+{% extends "att/base.html" %}
+
+{% block title %}Student's Lessons on Day{% endblock %}
+
+{% block content %}
+    <section id="lessons-list" class="section is-flex is-flex-direction-column">
+
+        <div class="block">
+        <div id="lessons-list-header">
+            <div class="columns is-mobile is-1-mobile is-2-tablet is-3-desktop">
+                <div class="column is-half"><a class="button is-fullwidth" href="{% url 'att:lessons-today' %}">📅 Today</a></div>
+                <div class="column is-half"><a class="button is-fullwidth" href="{% url 'att:week-view' year=day.year month=day.month day=day.day %}">Week</a></div>
+            </div>
+            <div class="columns">
+                <div class="column">
+                    <div class="field has-addons">
+                    <div class="control">
+                        <a class="button is-fullwidth is-warning is-inverted" href="{% url 'att:lessons-on-day' year=previous_day.year month=previous_day|date:'b' day=previous_day.day %}">
+                            <span class="icon"><i class="fa-solid fa-circle-arrow-left"></i></span>
+                        </a>
+                    </div>
+                    <div class="control" style="width: 100%;">
+                        <div class="date-picker-wrapper">
+                            <button id="open-date-picker" class="button is-fullwidth is-warning">
+                                {{ day|date:'D, j M Y' }}
+                            </button>
+                            <input type="date" id="hidden-date-picker" class="invisible">
+                        </div>
+                    </div>
+                    <div class="control">
+                        <a class="button is-fullwidth is-warning is-inverted" href="{% url 'att:lessons-on-day' year=next_day.year month=next_day|date:'b' day=next_day.day %}">
+                            <span class="icon"><i class="fa-solid fa-circle-arrow-right"></i></span>
+                        </a>
+                    </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <div id="lessons-list-container" class="attendance-scroll-container" style="max-height: 65vh;">
+            {% if lessons_list %}
+                {% for period, lesson in lessons_by_period %}
+                    <div class="columns is-mobile is-1-mobile lesson-row" style="margin-bottom: 5px;">
+                        <div class="column is-narrow">
+                            {% if lesson %}
+                            <a class="lessonslist-period button is-large is-size-6-mobile is-link is-fullwidth" href="{% url 'att:lesson-detail' lesson.id %}">{{ period.start_time|date:"H:i" }}</a>
+                            {% else %}
+                            <button class="lessonslist-period button is-large is-size-6-mobile is-link is-fullwidth" disabled>{{ period.start_time|date:"H:i" }}</button>
+                            {% endif %}
+                        </div>
+                        <div class="column">
+                            {% if lesson %}
+                            <a class="lessonslist-lesson button is-large is-size-6-mobile is-link is-fullwidth" href="{% url 'att:lesson-detail' lesson.id %}">
+                                <span class="is-hidden-mobile">{{ lesson.course.name }}</span>
+                                <span class="is-hidden-tablet">{{ lesson.course.shorten_name }}</span>
+                            </a>
+                            {% else %}
+                            <!-- <button class="button is-large is-size-5-mobile is-fullwidth" disabled> -->
+                            <!-- </button> -->
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No lessons today.</p>
+            {% endif %}
+        </div>
+
+    </section>
+
+    <script type="text/javascript">
+     document.addEventListener("DOMContentLoaded", function () {
+         const openBtn = document.getElementById("open-date-picker");
+         const hiddenPicker = document.getElementById("hidden-date-picker");
+         openBtn.addEventListener("click", function () {
+             hiddenPicker.classList.toggle("invisible");
+         });
+         hiddenPicker.addEventListener("change", function () {
+             hiddenPicker.classList.add("invisible");
+             const selectedDate = new Date(this.value);
+             const year = selectedDate.getFullYear();
+             const month = selectedDate.toLocaleString("en-US", { month: "short" }).toLowerCase();
+             const day = selectedDate.getDate();
+             const url = `/att/${year}/${month}/${parseInt(day)}/`;
+             window.location.href = url;
+         });
+     });
+      </script>
+{% endblock %}

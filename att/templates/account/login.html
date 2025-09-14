@@ -1,0 +1,106 @@
+{% load static %}
+{% load socialaccount %}
+{% load widget_tweaks %}
+
+<!doctype html>
+<html class="no-js has-navbar-fixed-top" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>{% block title %}ATT{% endblock %}</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+        <!-- Place favicon.ico in the root directory -->
+
+        <!-- <link rel="stylesheet" href="{% static 'att/pico.min.css' %}"> -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    </head>
+    <body>
+        <!--[if lt IE 8]>
+            <p class="browserupgrade">
+            You are using an <strong>outdated</strong> browser. Please
+            <a href="http://browsehappy.com/">upgrade your browser</a> to improve
+            your experience.
+            </p>
+        <![endif]-->
+
+        <main class="container">
+    <section class="section">
+        <div class="container">
+            <div class="columns is-centered">
+                <div class="column is-5-tablet is-4-desktop is-3-widescreen">
+
+                    <h1 class="title has-text-centered">Login</h1>
+
+                    <div class="has-text-centered mb-5">
+                                <a href="{% provider_login_url 'google' process='login' %}"
+                                   class="button is-primary is-medium is-fullwidth">
+                                    <span class="icon">
+                                        <i class="fab fa-google"></i>
+                                    </span>
+                                    <span>Login with Google</span>
+                                </a>
+                    </div>
+
+                    <div class="has-text-centered my-4">
+                        <p class="is-size-7 has-text-grey">or sign in with your account</p>
+                    </div>
+
+                    <form method="post" action="{% url 'account_login' %}" class="box">
+                        {% csrf_token %}
+                        {{ form.non_field_errors }}
+
+                        <div class="field">
+                            <label class="label">Email or Username</label>
+                            <div class="control has-icons-left">
+                                {{ form.login|add_class:"input" }}
+                                <span class="icon is-small is-left">
+                                    <i class="fa-solid fa-user"></i>
+                                </span>
+                            </div>
+                            {{ form.login.errors }}
+                        </div>
+
+                        <div class="field">
+                            <label class="label">Password</label>
+                            <div class="control has-icons-left">
+                                {{ form.password|add_class:"input" }}
+                                <span class="icon is-small is-left">
+                                    <i class="fa-solid fa-lock"></i>
+                                </span>
+                            </div>
+                            {{ form.password.errors }}
+                        </div>
+
+                        <div class="field">
+                            <label class="checkbox">
+                                {{ form.remember }} Remember me
+                            </label>
+                        </div>
+
+                        <div class="field">
+                            <button type="submit" class="button is-link is-fullwidth">
+                                Log In
+                            </button>
+                        </div>
+                    </form>
+
+                    <p class="has-text-centered">
+                        <a href="{% url 'account_reset_password' %}">Forgot your password?</a>
+                    </p>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+        </main>
+
+
+    </body>
+</html>

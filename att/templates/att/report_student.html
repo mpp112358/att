@@ -1,0 +1,136 @@
+{% extends "att/base.html" %}
+
+{% block title %}Student full report{% endblock %}
+
+{% block content %}
+    <section id="attendance-list" class="section is-flex is-flex-direction-column">
+
+        <div class="block">
+            <div id="attendance-list-header">
+                <div class="columns">
+                    <div class="column">
+                        <div class="control is-fullwidth has-icons-left">
+                            <button id="student-button" class="button is-primary is-fullwidth is-size-6-mobile is-size-4-tablet">
+                                {{ student.last_name }}, {{ student.first_name }}
+                                <span id="search-icon" class="icon is-left">
+                                    <i class="fa-solid fa-search"></i>
+                                </span>
+                            </button>
+                        </div>
+                        <div id="search-control" class="control has-icons-left invisible">
+                            <input id="search-input" type="search" class="input is-info" placeholder="Search another student">
+                            <span class="icon is-left">
+                                <i class="fa-solid fa-search" aria-hidden="true"></i>
+                            </span>
+                        </div>
+                        <div class="menu">
+                            <ul id="results" class="menu-list">
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="columns is-mobile is-1-mobile is-2-tablet is-3-desktop">
+                    <div class="column"><a class="button is-fullwidth" href="{% url 'att:report-today' %}">📅 Today</a></div>
+                </div>
+            </div>
+        </div>
+
+
+        <div id="lessons-list-container" class="attendance-scroll-container" style="max-height: 65vh;">
+            <div class="columns is-mobile">
+                <div class="column">
+                {% for record in records %}
+                    {% ifchanged record.lesson.date %}
+                        <div><p class="is-size-4">{{ record.lesson.date|date:"D j b" }}</p></div>
+                    {% endifchanged %}
+                        <button class="att-button button is-fullwidth is-justify-content-flex-start is-size-7-mobile is-size-5-tablet is-primary" data-attendance-status={{ record.status }}>
+                                <span class="icon is-size-6-mobile is-size-4-tablet">
+                                    <i class="att-icon fa-solid" data-attendance-status={{ record.status }}></i>
+                                </span>
+                                <span>{{ record.lesson.period.start_time|date:"H:i" }} {{ record.lesson.course.name }}</span>
+                        </button>
+                {% empty %}
+                    <div class="empty">No one absent or late</div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <script type="text/javascript">
+     document.addEventListener("DOMContentLoaded", function () {
+
+         const studentButton = document.getElementById("student-button");
+         const resultsBlock = document.getElementById("results");
+         const searchInput = document.getElementById("search-input");
+         const searchControl = document.getElementById("search-control");
+         const searchIcon = document.getElementById("search-icon");
+         studentButton.addEventListener("click", () => {
+             searchIcon.classList.toggle("invisible");
+             searchControl.classList.toggle("invisible");
+             searchInput.focus();
+         });
+         searchInput.addEventListener("input", () => {
+             if (searchInput.value != "") {
+                 fetch("{% url 'att:do-search-students' %}", {
+                     method: "POST",
+                     headers: {
+                         "Content-type": "application/json",
+                         "X-CSRFToken": "{{ csrf_token }}"
+                     },
+                     body: JSON.stringify({
+                         searchstr: searchInput.value
+                     })
+                 }).then(response => {
+                     if (!response.ok) {
+                         alert("Error searching students");
+                     }
+                     return response.json();
+                 }).then(data => {
+                     const results = data.search_results;
+                     resultsBlock.innerHTML = "";
+                     results.forEach(result => {
+                         resultsBlock.innerHTML = resultsBlock.innerHTML + `<li data-student-id="${result.student_id}"><a href="/att/report-student/${result.student_id}/">` + result.name + "</a></li>";
+                     });
+                     resultsBlock.children[0].children[0].classList.add("is-active");
+                 }).catch(error => {
+                     alert("Error searching students: " + error);
+                 });
+             }
+             else {
+                 resultsBlock.innerHTML = "";
+             }
+         });
+         searchInput.addEventListener("change", () => {
+             const firstResult = resultsBlock.children[0];
+             const url = `/att/report-student/${firstResult.dataset.studentId}/`;
+             window.location.href = url;
+         });
+
+         const buttonClass = {
+             "absent": "is-danger",
+             "late": "is-warning",
+             "present": "is-success"
+         };
+         const iconClass = {
+             "unregistered": "fa-circle-question",
+             "present": "fa-check",
+             "absent": "fa-warning",
+             "late": "fa-clock"
+         }
+         function addStatusIcon(attStatus, iconTarget) {
+             iconTarget.classList.add(iconClass[attStatus]);
+         }
+         function addStatusClass(attStatus, buttonTarget) {
+             buttonTarget.classList.toggle(buttonClass[attStatus]);
+         }
+         document.querySelectorAll(".att-button").forEach(button => {
+             addStatusClass(button.dataset.attendanceStatus, button);
+         });
+         document.querySelectorAll(".att-icon").forEach(icon => {
+             addStatusIcon(icon.dataset.attendanceStatus, icon);
+         })
+
+     });
+
+    </script>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "att/base.html" %}
+
+{% block title %}Select student{% endblock %}
+
+{% block content %}
+
+    <div class="section">
+        <div class="panel is-primary">
+            <p class="panel-heading">Select student</p>
+            <div class="panel-block">
+                <div class="field" style="width: 100%;">
+                    <div class="control has-icons-left">
+                        <input id="search-input" type="search" list="results-list" class="input is-primary" placeholder="Start writing to search...">
+                        <span class="icon is-left">
+                            <i class="fa-solid fa-search" aria-hidden="true"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <!-- <datalist id="results-list">
+                 </datalist> -->
+            <div class="menu">
+                <ul id="results" class="menu-list">
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+     const resultsBlock = document.getElementById("results");
+     // const resultsList = document.getElementById("results-list");
+     const searchInput = document.getElementById("search-input");
+     searchInput.addEventListener("input", () => {
+         fetch("{% url 'att:do-search-students' %}", {
+             method: "POST",
+             headers: {
+                 "Content-type": "application/json",
+                 "X-CSRFToken": "{{ csrf_token }}"
+             },
+             body: JSON.stringify({
+                 searchstr: searchInput.value
+             })
+         }).then(response => {
+             if (!response.ok) {
+                 alert("Error searching students");
+             }
+             return response.json();
+         }).then(data => {
+             const results = data.search_results;
+             resultsBlock.innerHTML = "";
+             // resultsList.innerHTML = "";
+             results.forEach(result => {
+                 resultsBlock.innerHTML = resultsBlock.innerHTML + `<li data-student-id="${result.student_id}"><a href="/att/student/${result.student_id}/{{ today.year }}/{{ today.month }}/{{ today.day }}/">` + result.name + "</a></li>";
+                 // resultsList.innerHTML = resultsList.innerHTML + `<option value="${result.name}"></option>`
+             });
+             resultsBlock.children[0].children[0].classList.add("is-active");
+         }).catch(error => {
+             alert("Error searching students: " + error);
+         });
+     });
+     searchInput.addEventListener("change", () => {
+         const firstResult = resultsBlock.children[0];
+         const url = `/att/student/${firstResult.dataset.studentId}/{{ today.year }}/{{ today.month }}/{{ today.day }}/`;
+         window.location.href = url;
+     })
+    </script>
+
+{% endblock %}

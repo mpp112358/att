@@ -1,0 +1,257 @@
+{% load static %}
+<!doctype html>
+<html class="no-js has-navbar-fixed-top" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>{% block title %}ATT{% endblock %}</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+        <!-- Place favicon.ico in the root directory -->
+
+        <!-- <link rel="stylesheet" href="{% static 'att/pico.min.css' %}"> -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    </head>
+    <body>
+        <!--[if lt IE 8]>
+            <p class="browserupgrade">
+            You are using an <strong>outdated</strong> browser. Please
+            <a href="http://browsehappy.com/">upgrade your browser</a> to improve
+            your experience.
+            </p>
+        <![endif]-->
+
+        <style type="text/css" media="screen">
+
+         /* .course-button {
+            font-size: clamp(0.8rem, 2.5vw, 1rem);
+            }
+          */
+
+         .att-button{
+             margin: 1%;
+         }
+
+         .course-button {
+             white-space: normal;
+             font-size: clamp(0.8rem, 4vw, max(1.1rem, 2vw));
+             margin: 1% 0;
+         }
+
+         .invisible {
+             display: none;
+         }
+
+         #students-list {
+             height: 80vh;
+             padding: 0;
+         }
+
+         .attendance-scroll-container {
+             flex-grow: 1;
+             min-height: 0;
+             overflow-y: auto;
+         }
+
+         #courses-selector {
+             height: 80vh;
+             padding: 0;
+         }
+
+         .courses-scroll-container {
+             flex-grow: 1;
+             min-height: 0;
+             overflow-y: auto;
+         }
+
+         #nonschooldays-list {
+             height: 80vh;
+             padding: 0;
+         }
+
+         .nonschooldays-scroll-container {
+             flex-grow: 1;
+             min-height: 0;
+             overflow-y: auto;
+         }
+
+         .attendance-button {
+             margin: 0% 0;
+         }
+
+         button.unenrolled-period-button {
+             width: 100%;
+             height: 100%;
+             background-color: silver;
+         }
+
+         button.period-button {
+             width: 100%;
+             height: 100%;
+             background-color: orange;
+         }
+
+         .lesson-row {
+             margin-bottom: 0;
+         }
+
+         .lessonslist-period,
+         .lessonslist-lesson {
+             margin-bottom: 0;
+         }
+
+         .weeklyblock:not(:last-child) {
+             margin-bottom: 0.7rem;
+         }
+
+         .lesson-detail-block:not(:last-child) {
+             margin-bottom: 0.7rem;
+         }
+
+         /* .weekly-lesson-list {
+            display: grid;
+            grid-row-gap: 2px;
+            }
+          */
+
+         .student-period-table {
+             display: grid;
+             grid-template-columns: 20vw repeat(8, minmax(5vw,1fr));
+             grid-auto-flow: row;
+             grid-gap: 2px;
+         }
+
+         .student-period-table > div {
+             display: flex;
+             align-items: center;
+         }
+
+         .student-att-table {
+             display: grid;
+             grid-template-columns: 50vw repeat(2, minmax(5vw, 1fr));
+             grid-auto-flow: row;
+             grid-gap: 2px;
+         }
+
+         .student-att-table > div {
+             display: flex;
+             align-items: center;
+         }
+
+         header.top-navbar {
+             position: sticky;
+             top: 0;
+             opacity: 100%;
+         }
+
+        </style>
+
+        <nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
+            <div class="navbar-brand">
+                <a class="navbar-item" href="{% url 'att:lessons-today' %}">
+                    ATT
+                </a>
+                <a id="navbar-burguer" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="mainMenu">
+                    <<span aria-hidden="true"></span>>
+                    <<span aria-hidden="true"></span>>
+                    <<span aria-hidden="true"></span>>
+                    <<span aria-hidden="true"></span>>
+                </a>
+            </div>
+            <div id="mainMenu" class="navbar-menu">
+                <div class="navbar-start">
+                    <a class="navbar-item" href="{% url 'att:lessons-today' %}">
+                        <span class="icon"><i class="fa-regular fa-clock"></i></span>
+                        Lessons
+                    </a>
+                    <a class="navbar-item" href="{% url 'att:select-student' %}">
+                        <span class="icon"><i class="fa-regular fa-chalkboard-user"></i></span>
+                        Students
+                    </a>
+                </div>
+                <div class="navbar-end">
+                    <div class="navbar-item">
+                        <p>{{ user.username|default:"Guest" }}</p>
+                    </div>
+                    <div class="navbar-item">
+                        <form method="POST" action="/accounts/logout/">
+                            {% csrf_token %}
+                            <input type="submit" class="button" value="Logout"/>
+                        </form>
+                    </div>
+                    <div class="navbar-item has-dropdown is-hoverable">
+                        <a class="navbar-link">
+                            Reports
+                        </a>
+                        <div class="navbar-dropdown">
+                            <a class="navbar-item" href="{% url 'att:report-today' %}">
+                                Today
+                            </a>
+                            <a class="navbar-item" href="{% url 'att:report-from-start'  %}">
+                                Year
+                            </a>
+                            <a class="navbar-item" href="{% url 'att:report-student-select' %}">
+                                Student
+                            </a>
+                        </div>
+                    </div>
+                    {% if user.is_staff %}
+                        <div class="navbar-item has-dropdown is-hoverable">
+                            <a href="{% url 'att:setup' %}" class="navbar-link">
+                                Setup
+                            </a>
+                            <div class="navbar-dropdown">
+                                <a href="{% url 'att:setup-calendar' %}" class="navbar-item">
+                                    Calendar
+                                </a>
+                                <a href="{% url 'att:setup-teachers' %}" class="navbar-item">
+                                    Teachers
+                                </a>
+                                <a href="{% url 'att:setup-students' %}" class="navbar-item">
+                                    Students
+                                </a>
+                                <a href="{% url 'att:setup-courses' %}" class="navbar-item">
+                                    Courses
+                                </a>
+                                <a href="{% url 'att:setup-timetables' %}" class="navbar-item">
+                                    Timetables
+                                </a>
+                                <a href="{% url 'att:setup-nonschool-days' %}" class="navbar-item">
+                                    Non-school days
+                                </a>
+                                <a href="{% url 'att:setup-lessons' %}" class="navbar-item">
+                                    Lessons
+                                </a>
+                                <a href="{% url 'att:setup-attendance-records' %}" class="navbar-item">
+                                    Attendance
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
+
+        <script type="text/javascript">
+         document.addEventListener("DOMContentLoaded", () => {
+            const navbarBurguer = document.getElementById("navbar-burguer");
+            navbarBurguer.addEventListener("click", () => {
+                const target = document.getElementById(navbarBurguer.dataset.target);
+                navbarBurguer.classList.toggle("is-active");
+                target.classList.toggle("is-active");
+            });
+         });
+        </script>
+
+        <main class="container">
+            {% block content %}{% endblock %}
+        </main>
+
+
+    </body>
+</html>

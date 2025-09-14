@@ -1,0 +1,50 @@
+{% extends "att/base.html" %}
+
+{% block title %}Setup{% endblock %}
+
+{% block content %}
+
+    <section class="panel is-link">
+        <p class="panel-heading">Import teachers</p>
+        <div class="panel-block">
+            <form method="post" action="{% url 'att:import-teachers' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div id="teachers-file" class="file has-name is-fullwidth">
+                    <label class="file-label">
+                    <input type="file" class="file-input" name="teachers-file">
+                    <span class="file-cta">
+                        <span class="file-icon">
+                            <i class="fa-regular fa-upload"></i>
+                        </span>
+                        <span class="file-label">Choose a file...</span>
+                    </span>
+                    <span class="file-name">No file selected</span>
+                    </label>
+                </div>
+                <div class="field">
+                    <label class="label"></label>
+                    <div class="control">
+                        <button id="submit-button" type="submit" class="button is-primary is-fullwidth" disabled>Import</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <script type="text/javascript">
+     const fileInput = document.querySelector("#teachers-file input[type=file]");
+     const submitButton = document.querySelector("#submit-button");
+     fileInput.onchange = () => {
+         if (fileInput.files.length > 0) {
+             const fileName = document.querySelector("#teachers-file .file-name")
+             fileName.textContent = fileInput.files[0].name;
+             submitButton.removeAttribute("disabled");
+         }
+         else {
+             fileName.textContent = "No file selected";
+             submitButton.setAttribute("disabled", "");
+         }
+     }
+    </script>
+
+{% endblock %}

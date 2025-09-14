@@ -1,0 +1,87 @@
+{% extends "att/base.html" %}
+
+{% block title %}Setup Timetable{% endblock %}
+
+{% block content %}
+
+    <div class="box">
+        <div class="title is-3">
+            {{ course.name }}
+        </div>
+        <div class="subtitle is-3">
+            {{ course.teacher }}
+        </div>
+    </div>
+
+    <div class="box">
+        <nav class="level">
+            <div class="level-item">
+                <a class="button is-link is-fullwidth" href="{% url 'att:setup-timetables' %}">Back to courses list</a>
+            </div>
+        </nav>
+    </div>
+
+    <div class="box">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Period</th>
+                    <th>Mo</th>
+                    <th>Tu</th>
+                    <th>We</th>
+                    <th>Th</th>
+                    <th>Fr</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for buttonrow in buttons %}
+                    <tr>
+                        <td>{{ buttonrow.period.start_time|date:"H:i" }}-{{ buttonrow.period.end_time|date:"H:i" }}</td>
+                        {% for button in buttonrow.buttons %}
+                            <td>
+                                <button class="button schedule-button {% if button.scheduled %} is-primary {% endif %}"
+                                        data-day={{ button.day }}
+                                        data-period-id="{{ buttonrow.period.id }}">
+                                    Nothing scheduled
+                                </button>
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script type="text/javascript">
+     document.querySelectorAll(".schedule-button").forEach(button => {
+        button.addEventListener("click", function () {
+            const courseId = {{ course.id }};
+            const periodId = this.dataset.periodId;
+            const day = this.dataset.day;
+
+            fetch("{% url 'att:toggle-schedule' %}", {
+                method: "POST",
+                headers: {
+                    "Content-type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                body: JSON.stringify({
+                    courseId: courseId,
+                    periodId: periodId,
+                    day: day
+                })
+            }).then(response => {
+                if (!response.ok) {
+                    alert("Error toggling schedule");
+                }
+                return response.json();
+            }).then(data => {
+                this.classList.toggle("is-primary");
+            }).catch(error => {
+                alert("Error toggling schedule: " + error)
+            });
+        });
+     });
+    </script>
+
+{% endblock %}

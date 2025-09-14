@@ -1,0 +1,38 @@
+{% extends "att/base.html" %}
+
+{% block title %}Edit Academic Year{% endblock %}
+
+{% block content %}
+
+    <section class="section">
+        <div class="container">
+            <form method="post">
+                {% csrf_token %}
+                <div class="field">
+                    <label class="label">Name</label>
+                    <div class="control">
+                        {{ form.name }}
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Start Date</label>
+                    <div class="control">
+                        {{ form.start_date }}
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">End Date</label>
+                    <div class="control">
+                        {{ form.end_date }}
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label"></label>
+                    <div class="control">
+                        <button type="submit" class="button is-primary">Save</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+{% endblock %}

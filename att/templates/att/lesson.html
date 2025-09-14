@@ -1,0 +1,148 @@
+{% extends "att/base.html" %}
+
+{% block title %}Lesson details{% endblock %}
+
+{% block content %}
+    <section id="students-list" class="section is-flex is-flex-direction-column">
+            <div id="students-list-header" class="box">
+                <div class="columns">
+                    <div class="column">
+                        <div class="lesson-detail-block">
+                            <a class="button is-link is-fullwidth" href="{% url 'att:lessons-on-day' year=lesson.date.year month=lesson.date|date:'b' day=lesson.date.day %}">
+                                <span class="panel-icon"><i class="fa-solid fa-book" aria-hidden="true"></i></span>
+                                <span class="is-hidden-mobile">{{ lesson.course }}</span>
+                                <span class="is-hidden-tablet">{{ lesson.course.shorten_name }}</span>
+                            </a>
+                        </div>
+                        <div class="field has-addons">
+                            <div class="control">
+                                {% if previous_lesson %}
+                                    <a class="button is-warning is-inverted is-fullwidth" href="{% url 'att:lesson-detail' lesson_id=previous_lesson.id %}">
+                                        <span class="icon"><i class="fa-solid fa-circle-arrow-left"></i></span>
+                                    </a>
+                                {% else %}
+                                    <button class="button is-warning is-inverted is-fullwidth" disabled>
+                                        <span class="icon"><i class="fa-solid fa-circle-arrow-left"></i></span>
+                                    </button>
+                                {% endif %}
+                            </div>
+                            <div class="control" style="width: 100%;">
+                                <a class="button is-fullwidth is-warning" href="{% url 'att:lessons-on-day' year=lesson.date.year month=lesson.date|date:'b' day=lesson.date.day %}">
+                                    <span class="panel-icon"><i class="fa-solid fa-clock" aria-hidden="true"></i></span>
+                                    <span>{{ lesson.date|date:"M j" }} {{ lesson.period.start_time|date:"H:i" }}-{{ lesson.period.end_time|date:"H:i" }}</span>
+                                </a>
+                            </div>
+                            <div class="control">
+                                {% if next_lesson %}
+                                    <a class="button is-fullwidth is-inverted is-warning" href="{% url 'att:lesson-detail' lesson_id=next_lesson.id %}">
+                                        <span class="icon"><i class="fa-solid fa-circle-arrow-right"></i></span>
+                                    </a>
+                                {% else %}
+                                    <button class="button is-inverted is-warning" disabled>
+                                        <span class="icon"><i class="fa-solid fa-circle-arrow-right"></i></span>
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="lesson-detail-block">
+                            <form method="post" action="{% url 'att:mark-unregistered-present' %}">
+                                {% csrf_token %}
+                                <input class="invisible" name="lessonId" value="{{ lesson.id }}"\>
+                                <button id="mark-unregistered-present-button" type="submit" class="button is-success is-fullwidth is-size-4-tablet is-size-5-mobile" action="">
+                                    Mark unregistered present
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="columns px-4 attendance-scroll-container">
+                <div class="column">
+                    {% for attendance_record in attendance_records %}
+                        <div class="field has-addons"">
+                            <div class="control" style="width: 100%; max-width= 100vh;">
+                                <button class="button is-justify-content-flex-start is-fullwidth is-size-6-mobile is-size-4-tablet attendance-button"
+                                        data-student-id="{{ attendance_record.student.id }}"
+                                        data-attendance_record-status="{{ attendance_record.status }}">
+                                    <span class="icon is-size-6-mobile is-size-4-tablet">
+                                        <i id="indicator-{{ attendance_record.student.id }}" class="fa-solid">
+                                            <!-- : {{ attendance_record.status }} {% if attendance_record.minutes_late %} ({{ attendance_record.minutes_late }} min) {% endif %} -->
+                                        </i>
+                                    </span>
+                                    <span>
+                                        {{ attendance_record.student.last_name }}, {{ attendance_record.student.first_name }}
+                                    </span>
+                                </button>
+                            </div>
+                            <div class="control is-hidden-mobile">
+                                <a href="{% url 'att:student-on-day' student_id=attendance_record.student.id year=lesson.date.year month=lesson.date.month day=lesson.date.day %}" class="button is-fullwidth is-size-6-mobile is-size-4-tablet">
+                                    <span class="icon is-size-6-mobile is-size-4-tablet">
+                                        <i class="fa-solid fa-circle-arrow-right">
+                                        </i>
+                                    </span>
+                                </a>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <!-- <div>No students</div> -->
+                    {% endfor %}
+                </div>
+            </div>
+    </section>
+
+        <script type="text/javascript">
+         const buttonClass = {
+             "absent": "is-danger",
+             "late": "is-warning",
+             "present": "is-success"
+         };
+         const iconClass = {
+             "unregistered": "fa-circle-question",
+             "present": "fa-check",
+             "absent": "fa-warning",
+             "late": "fa-clock"
+         }
+         function addStatusIcon(attStatus, indi) {
+             indi.className = "";
+             indi.classList.add("fa-solid");
+             indi.classList.add(iconClass[attStatus]);
+         }
+         document.querySelectorAll(".attendance-button").forEach(button => {
+             button.classList.add(buttonClass[button.dataset.attendance_recordStatus]);
+             const lessonId = {{ lesson.id }};
+             const studentId = button.dataset.studentId;
+             const indicator = document.getElementById("indicator-" + studentId);
+             const attendanceStatus = button.dataset.attendance_recordStatus;
+             addStatusIcon(attendanceStatus, indicator);
+             button.addEventListener("click", function () {
+                 fetch("{% url 'att:mark-attendance' %}", {
+                     method: "POST",
+                     headers: {
+                         "Content-type": "application/json",
+                         "X-CSRFToken": "{{ csrf_token }}"
+                     },
+                     body: JSON.stringify({
+                         studentId: studentId,
+                         lessonId: lessonId,
+                     })
+                 }).then(response => {
+                     if (!response.ok) {
+                         alert("Error saving attendance");
+                     }
+                     return response.json();
+                 }).then(data => {
+                     this.classList.remove(buttonClass[this.dataset.attendance_recordStatus]);
+                     this.classList.add(buttonClass[data.attendanceStatus]);
+                     this.dataset.attendance_recordStatus = data.attendanceStatus;
+                     // indicator.textContent = ": " + data.attendanceStatus;
+                     addStatusIcon(data.attendanceStatus, indicator);
+                     // if (data.minutesLate) {
+                     //     indicator.textContent = indicator.textContent + " (" + data.minutesLate + " min)";
+                     // }
+                 }).catch(error => {
+                     alert("Error saving attendance: " + error);
+                 });
+             });
+         });
+        </script>
+{% endblock %}

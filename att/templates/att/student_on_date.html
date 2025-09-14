@@ -1,0 +1,61 @@
+{% extends "att/base.html" %}
+
+{% block title %}Student on Day{% endblock %}
+
+{% block content %}
+        <header class="top-navbar">
+            <nav>
+                <ul>
+                    <li><a role="button" href="{% url 'att:lessons-on-day' year=previous_day.year month=previous_day|date:'b' day=previous_day.day %}">← Previous Day</a></li>
+                    <li><a role="button" href="{% url 'att:lessons-today' %}">📅 Back to Today</a></li>
+                    <li><a role="button" href="{% url 'att:lessons-on-day' year=next_day.year month=next_day|date:'b' day=next_day.day %}">Next Day →</a></li>
+                </ul>
+                <ul>
+                    <li><a role="button" href="{% url 'att:week-view' year=day.year month=day.month day=day.day %}">Week</a></li>
+                </ul>
+            </nav>
+
+            <nav>
+                <ul>
+                    <li><h1>{{ day|date:"l, j M Y" }}</h1></li>
+                </ul>
+                <ul>
+                    <li>
+                        <form method="get" id="date-picker-form" action="{% url 'att:lessons-on-day' year=2000 month=1 day=1 %}">
+                            <fieldsetrole="group">
+                                <input type="date" name="date" id="date-picker" />
+                                <button type="submit">Go</button>
+                            </fieldset>
+                        </form>
+                    </li>
+                </ul>
+            </nav>
+        </header>
+        <div id="lessons-list-container">
+            {% if lessons_list %}
+                <div class="lessonslist">
+                    {% for lesson in lessons_list %}
+                        <div><a role="button" class="container outline contrast" href="{% url 'att:lesson-detail' lesson.id %}">{{ lesson.period.start_time }}-{{ lesson.period.end_time }}</a></div>
+                        <div><a role="button" class="container" href="{% url 'att:lesson-detail' lesson.id %}">{{ lesson.course.name }}</a></div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>No lessons today.</p>
+            {% endif %}
+        </div>
+
+    <script type="text/javascript">
+     document.getElementById("date-picker-form").addEventListener("submit", function (e) {
+         e.preventDefault();
+         const dateInput = document.getElementById("date-picker").value;
+         if (!dateInput)
+             return;
+         const [year, month, day] = dateInput.split("-");
+         const monthNames = ["jan", "feb", "mar", "apr", "may", "jun",
+                             "jul", "aug", "sep", "oct", "nov", "dec"];
+         const monthStr = monthNames[parseInt(month, 10) - 1];
+         const url = `/att/${year}/${monthStr}/${parseInt(day)}/`;
+         window.location.href = url;
+     });
+    </script>
+{% endblock %}

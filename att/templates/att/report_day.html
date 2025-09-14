@@ -1,0 +1,163 @@
+{% extends "att/base.html" %}
+
+{% block title %}Daily report{% endblock %}
+
+{% block content %}
+    <section id="attendance-list" class="section is-flex is-flex-direction-column">
+
+        <div class="block">
+            <div id="attendance-list-header">
+                <div class="columns is-mobile is-1-mobile is-2-tablet is-3-desktop">
+                    <div class="column">
+                        <a class="button is-fullwidth" href="{% url 'att:report-today' %}">
+                        📅 Today
+                        </a>
+                    </div>
+                </div>
+                <div class="columns">
+                    <div class="column">
+                        <div class="field has-addons">
+                            <div class="control">
+                                <a class="button is-fullwidth is-warning is-inverted" href="{% url 'att:report-day' year=previous_day.year month=previous_day.month day=previous_day.day %}">
+                                    <span class="icon"><i class="fa-solid fa-circle-arrow-left"></i></span>
+                                </a>
+                            </div>
+                            <div class="control" style="width: 100%;">
+                                <div class="date-picker-wrapper">
+                                    <button id="open-date-picker" class="button is-fullwidth is-warning">
+                                        {{ date|date:'D, j M Y' }}
+                                    </button>
+                                    <input type="date" id="hidden-date-picker" class="invisible">
+                                </div>
+                            </div>
+                            <div class="control">
+                                <a class="button is-fullwidth is-warning is-inverted" href="{% url 'att:report-day' year=next_day.year month=next_day.month day=next_day.day %}">
+                                    <span class="icon"><i class="fa-solid fa-circle-arrow-right"></i></span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div id="lessons-list-container" class="attendance-scroll-container" style="max-height: 65vh;">
+            <div class="student-period-table">
+                <div>
+                    Student
+                </div>
+                {% for period in periods %}
+                    <div>
+                        <button class="button is-fullwidth is-link is-size-7-mobile" style="width: 100%;">
+                            {{ period.start_time|date:"H:i" }}
+                        </button>
+                    </div>
+                {% endfor %}
+                {% for student in attendance_records %}
+                    <div>
+                        <a class="button is-fullwidth is-justify-content-flex-start is-size-7-mobile" href="{% url 'att:student-on-day' student.student.id date.year date.month date.day %}">
+                            {{ student.student.last_name }}, {{ student.student.first_name }}
+                        </a>
+                    </div>
+                    {% for attendance_record in student.attendance_records %}
+                        <div>
+                            {% if attendance_record.0 %}
+                                <button class="attendance-period-button button is-fullwidth"
+                                        data-student-id="{{ student.student.id }}"
+                                        data-lesson-id="{{ attendance_record.0.lesson.id }}"
+                                        data-period-id="{{ attendance_record.0.lesson.period.id }}"
+                                        data-attendance_record-status="{{ attendance_record.0.status }}">
+                                    <span class="icon is-size-6-mobile is-size-6-tablet">
+                                        <i id="icon-{{ student.student.id }}-{{ attendance_record.0.lesson.period.id }}" class="fa-solid">
+                                        </i>
+                                    </span>
+                                </button>
+                            {% else %}
+                                <button class="button is-fullwidth" disabled>No lesson</button>
+                            {% endif %}
+                        </div>
+                    {% empty %}
+                        Nothing to show
+                    {% endfor %}
+
+                {% empty %}
+                    <div class="empty">No one absent or late</div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <script type="text/javascript">
+         const buttonClass = {
+             "absent": "is-danger",
+             "late": "is-warning",
+             "present": "is-success"
+         };
+         const iconClass = {
+             "unregistered": "fa-circle-question",
+             "present": "fa-check",
+             "absent": "fa-warning",
+             "late": "fa-clock"
+         }
+         function addStatusIcon(attStatus, icon) {
+             icon.className = "";
+             icon.classList.add("fa-solid");
+             icon.classList.add(iconClass[attStatus]);
+         }
+
+     document.querySelectorAll(".attendance-period-button").forEach(button => {
+         button.classList.add(buttonClass[button.dataset.attendance_recordStatus]);
+         const lessonId = button.dataset.lessonId;
+         const studentId = button.dataset.studentId;
+         const periodId = button.dataset.periodId;
+         const icon = document.getElementById("icon-" + studentId + "-" + periodId);
+         const attendanceStatus = button.dataset.attendance_recordStatus;
+         addStatusIcon(attendanceStatus, icon);
+
+         button.addEventListener("click", function () {
+             fetch("{% url 'att:mark-attendance' %}", {
+                 method: "POST",
+                 headers: {
+                     "Content-type": "application/json",
+                     "X-CSRFToken": "{{ csrf_token }}"
+                 },
+                 body: JSON.stringify({
+                     studentId: studentId,
+                     lessonId: lessonId
+                 })
+             }).then(response => {
+                 if (!response.ok) {
+                     alert("Error saving attendance");
+                 }
+                 return response.json();
+             }).then(data => {
+                 this.classList.remove(buttonClass[this.dataset.attendance_recordStatus]);
+                 this.classList.add(buttonClass[data.attendanceStatus]);
+                 this.dataset.attendance_recordStatus = data.attendanceStatus;
+                 addStatusIcon(data.attendanceStatus, icon);
+                 // const indicator = document.getElementById("indicator-" + studentId + "-" + periodId);
+                 // indicator.textContent = data.attendanceStatus;
+             }).catch(error => {
+                 alert("Error saving attendance: " + error);
+             });
+         });
+     });
+
+     const openBtn = document.getElementById("open-date-picker");
+     const hiddenPicker = document.getElementById("hidden-date-picker");
+     openBtn.addEventListener("click", function () {
+         hiddenPicker.classList.toggle("invisible");
+     });
+     hiddenPicker.addEventListener("change", function () {
+         hiddenPicker.classList.add("invisible");
+         const selectedDate = new Date(this.value);
+         const year = selectedDate.getFullYear();
+         const month = selectedDate.getMonth() + 1;
+         const day = selectedDate.getDate();
+         const url = `/att/report-day/${year}/${month}/${day}/`;
+         window.location.href = url;
+     });
+
+    </script>
+{% endblock %}

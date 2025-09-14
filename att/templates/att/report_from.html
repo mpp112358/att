@@ -1,0 +1,54 @@
+{% extends "att/base.html" %}
+
+{% block title %}Daily report{% endblock %}
+
+{% block content %}
+    <section id="attendance-list" class="section is-flex is-flex-direction-column">
+
+        <div class="block">
+            <div id="attendance-list-header">
+                <div class="columns is-mobile is-1-mobile is-2-tablet is-3-desktop">
+                    <div class="column"><a class="button is-fullwidth" href="{% url 'att:report-today' %}">📅 Today</a></div>
+                    <div class="column"><a class="button is-fullwidth" href="{% url 'att:report-from' last_7_days.year last_7_days.month last_7_days.day  %}">One week</a></div>
+                    <div class="column"><a class="button is-fullwidth" href="{% url 'att:report-from' last_30_days.year last_30_days.month last_30_days.day %}">One month</a></div>
+                    <div class="column"><a class="button is-fullwidth" href="{% url 'att:report-from-start'  %}">Whole year</a></div>
+                </div>
+            </div>
+        </div>
+
+
+        <div id="lessons-list-container" class="attendance-scroll-container" style="max-height: 65vh;">
+            <div class="student-att-table">
+                <div>
+                    Student
+                </div>
+                <div>
+                    Absent
+                </div>
+                <div>
+                    Late
+                </div>
+                {% for student in students %}
+                    <div>
+                        <a class="button is-fullwidth is-justify-content-flex-start is-size-7-mobile is-primary" href="{% url 'att:report-student' student.id %}">
+                            {{ student.last_name }}, {{ student.first_name }}
+                        </a>
+                    </div>
+                    <div>
+                        <a class="button {% if student.absent > 0 %} is-danger {% endif %} is-fullwidth">
+                            {{ student.absent }}
+                        </a>
+                    </div>
+                    <div>
+                        <a class="button {% if student.late > 0 %} is-warning {% endif %} is-fullwidth">
+                            {{ student.late }}
+                        </a>
+                    </div>
+                {% empty %}
+                    <div class="empty">No one absent or late</div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+{% endblock %}

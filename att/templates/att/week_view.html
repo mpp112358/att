@@ -1,0 +1,83 @@
+{% extends "att/base.html" %}
+
+{% block title %}Week View{% endblock %}
+
+{% block content %}
+
+    <section class="section is-flex is-flex-direction-column" style="height: 95vh;">
+        <div class="box">
+            <div class="field">
+                <div class="control">
+                    <button class="button is-fullwidth is-info">{{ teacher.last_name }}, {{ teacher.first_name }}</button>
+                </div>
+            </div>
+
+            <div class="field has-addons">
+                <div class="control">
+                    <a class="button is-warning is-inverted is-fullwidth" href="{% url 'att:week-view' year=previous_week.year month=previous_week.month day=previous_week.day %}">
+                        <span class="icon"><i class="fa-solid fa-circle-arrow-left"></i></span>
+                    </a>
+                </div>
+                <div class="control" style="width: 100%;">
+                    <div class="date-picker-wrapper">
+                        <button id="open-date-picker" class="button is-fullwidth is-warning">
+                            <span class="panel-icon"><i class="fa-solid fa-calendar" aria-hidden="true"></i></span>
+                            <span class="is-hidden-tablet">{{ start_of_week|date:'M j' }} -- {{ end_of_week|date:'M j' }}</span>
+                            <span class="is-hidden-mobile">{{ start_of_week|date:'F j' }} -- {{ end_of_week|date:'F j' }}</span>
+                        </button>
+                        <input type="date" id="hidden-date-picker" class="invisible"\>
+                    </div>
+                </div>
+                <div class="control">
+                    <a class="button is-fullwidth is-inverted is-warning" href="{% url 'att:week-view' year=next_week.year month=next_week.month day=next_week.day %}">
+                        <span class="icon"><i class="fa-solid fa-circle-arrow-right"></i></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="columns is-1-mobile is-1-desktop attendance-scroll-container">
+            {% for day, lessons in lessons_by_day %}
+                <div class="column">
+                    <div class="weeklyblock">
+                        <a class="button is-fullwidth is-warning" href="{% url 'att:lessons-on-day' year=day.year month=day|date:'b' day=day.day %}">{{ day|date:"D" }}<br>{{ day|date:"M j" }}</a>
+                    </div>
+                    {% for period, lesson in lessons %}
+                        <div class="weeklyblock">
+                            {% if lesson %}
+                                <a role="button" class="button is-link is-fullwidth" href="{% url 'att:lesson-detail' lesson.id %}">
+                                    {{ period.start_time|date:"H:i" }} {{ lesson.course.shorten_name }}
+                                </a>
+                            {% else %}
+                                <a class="button is-fullwidth is-hidden-mobile" disabled>-</a>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <p><a href="{% url 'att:lessons-today' %}">📅 Back to Today</a></p>
+
+    </section>
+
+    <script type="text/javascript">
+     document.addEventListener("DOMContentLoaded", function () {
+         const openBtn = document.getElementById("open-date-picker");
+         const hiddenPicker = document.getElementById("hidden-date-picker");
+         openBtn.addEventListener("click", function () {
+             hiddenPicker.classList.toggle("invisible");
+         });
+         hiddenPicker.addEventListener("change", function () {
+             hiddenPicker.classList.add("invisible");
+             const selectedDate = new Date(this.value);
+             console.log(selectedDate);
+             const year = selectedDate.getFullYear();
+             const month = selectedDate.getMonth();
+             const day = selectedDate.getDate();
+             const url = `/att/week/${year}/${parseInt(month)+1}/${day}/`;
+             window.location.href = url;
+         });
+     });
+    </script>
+{% endblock %}

@@ -1,0 +1,99 @@
+#+title: Erd
+#+startup: overview
+
+* Info source
+** [[file+emacs:django-readthedocs-io-en-5.2.x.pdf][Django]]
+** [[https://joshblais.com/posts/my-literate-doom-emacs-config/][Doom Emacs config]]
+* Data Model
+** Model
+#+begin_src plantuml
+@startchen
+entity Teacher {
+        User : STRING <<key>>
+        FullName : STRING
+}
+entity Student {
+        Id : INTEGER <<key>>
+        FullName : STRING
+}
+entity Course {
+        Id : STRING <<key>>
+        Name : STRING
+        Level : INTEGER
+}
+entity Lesson {
+        Id : INTEGER <<key>>
+        Classroom : INTEGER
+        Date : DATE
+        StartTime : TIME
+        EndTime : TIME
+}
+entity AbsentRecord {
+        Student : INTEGER <<key>>
+        Lesson : INTEGER <<key>>
+        Status : ABSENT_LATE
+        MinutesLate : INTEGER
+        MarkedAt : DATETIME
+        MarkedBy : STRING
+        Comments : STRING
+}
+
+relationship VersesAbout {
+}
+Lesson =N= VersesAbout
+VersesAbout =1= Course
+
+relationship Teaches {
+}
+Teacher -1- Teaches
+Teaches =N= Lesson
+relationship Enrolled {
+}
+
+Student -N- Enrolled
+Enrolled -N- Lesson
+@endchen
+#+end_src
+
+** TODO Add tutor to student
+This will allow specilized views for tutors
+* Views
+
+** Take attendance views
+
+*** Select lesson views
+**** Today view
+**** Weekly view
+**** Monthly view
+
+*** Take lesson attendance views
+**** Take lesson attendance view
+
+** Report views
+* Plan
+** TODO Attendance taking
+*** TODO Justify non-attendance and tardiness
+*** TODO Common dates navigation framework
+*** TODO Look-and-feel
+**** DONE No ul, but"tables"
+**** TODO Top navigation bar
+**** TODO Scroll long lists
+*** TODO Navigation buttons in lesson-detail view
+At least:
+- Previous and next lesson buttons.
+- Back to lessons-on-day view.
+*** DONE Improve weekly view
+Instead of a summary with the number of lessons, a small button to access the lesson, and a button on the date to access the day.
+** TODO Report views
+*** TODO Today report
+*** TODO Specific day report
+*** TODO Student report
+** TODO User management
+** TODO Bulk actions
+** TODO Import from Alexia
+*** TODO Check validity of importing files
+*** TODO Manage import errors
+*** TODO Preview selected files before import
+*** TODO Help about the format of files to be imported
+** TODO API
+** TODO CLI
