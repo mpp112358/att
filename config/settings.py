@@ -175,12 +175,20 @@ SOCIALACCOUNT_ADAPTER = "att.adapters.MySocialAccountAdapter"
 SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 SOCIALACCOUNT_LOGIN_ON_GET = True
 
-# Security settings
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
-SECURE_SSL_REDIRECT = True
+if not DEBUG: # Production
+    # Security settings
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = True
 
-# HSTS (HTTP Strict Transport Security)
-SECURE_HSTS_SECONDS = 31536000  # 1 year
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True  # add to Chrome/Firefox preload lists
+    # HSTS (HTTP Strict Transport Security)
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True  # add to Chrome/Firefox preload lists
+
+else: # Development
+    SECURE_SSL_REDIRECT = False
+
+
+print("DEBUG =", DEBUG)
+print("SECURE_SSL_REDIRECT =", SECURE_SSL_REDIRECT)

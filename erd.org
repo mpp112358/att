@@ -97,3 +97,128 @@ Instead of a summary with the number of lessons, a small button to access the le
 *** TODO Help about the format of files to be imported
 ** TODO API
 ** TODO CLI
+
+* Security Guide [1/4]
+** DONE 🔐 1. Django Security Settings [2/2]
+*** DONE Edit your config/settings.py:
+Restrict hosts
+#+begin_src python
+ALLOWED_HOSTS = ["example.com", "www.example.com"]
+CSRF_TRUSTED_ORIGINS = ["https://example.com", "https://www.example.com"]
+Turn off debug
+DEBUG = False
+Use secure cookies
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_SSL_REDIRECT = True  # after HTTPS is working
+#+end_src
+*** DONE Set a strong secret key
+(already in your .env, good job 👍).
+** TODO 🛡 2. Gunicorn Hardening [0/4]
+*** TODO When starting Gunicorn (via systemd):
+Run under a non-root user (~User=att~, which you’re doing ✅).
+*** TODO Limit workers:
+#+begin_src bash
+--workers 3 --worker-class gthread --threads 2
+#+end_src
+Threads can help with I/O without opening too many processes.
+*** TODO Add timeouts to avoid hanging workers:
+#+begin_src bash
+--timeout 30 --graceful-timeout 30 --max-requests 1000 --max-requests-jitter 50
+#+end_src
+This forces workers to restart periodically and mitigates memory leaks or DoS attempts.
+*** TODO Use the Unix socket (as you’re doing) and keep it locked down:
+#+begin_src bash
+[Service]
+ExecStart=/home/att/att_site/.venv/bin/gunicorn \
+  --workers 3 \
+  --threads 2 \
+  --timeout 30 \
+  --bind unix:/run/gunicorn_att.sock \
+  config.wsgi:application
+#+end_src
+** TODO 🔒 3. Nginx Hardening [0/4]
+*** TODO Inside your Nginx server block:
+Force HTTPS (after certbot setup):
+#+begin_src bash
+server {
+    listen 80;
+    server_name example.com www.example.com;
+    return 301 https://$host$request_uri;
+}
+#+end_src
+
+*** TODO SSL/TLS settings (Certbot usually sets these, but you can tighten them):
+#+begin_src bash
+ssl_protocols TLSv1.2 TLSv1.3;
+ssl_prefer_server_ciphers on;
+ssl_ciphers HIGH:!aNULL:!MD5;
+ssl_session_timeout 1d;
+ssl_session_cache shared:SSL:10m;
+ssl_session_tickets off;
+#+end_src
+*** TODO Security headers:
+#+begin_src bash
+add_header X-Frame-Options SAMEORIGIN;
+add_header X-Content-Type-Options nosniff;
+add_header X-XSS-Protection "1; mode=block";
+add_header Referrer-Policy strict-origin-when-cross-origin;
+add_header Permissions-Policy "geolocation=(), microphone=(), camera=()";
+#+end_src
+*** TODO Limit body size (prevents large POST uploads):
+#+begin_src bash
+client_max_body_size 10M;
+#+end_src
+** TODO 🔥 4. System-Level Hardening [0/3]
+*** TODO Firewall:
+Allow only ports 22 (SSH), 80 (HTTP), 443 (HTTPS).
+#+begin_src bash
+sudo ufw allow OpenSSH
+sudo ufw allow 'Nginx Full'
+sudo ufw enable
+#+end_src
+*** TODO Fail2ban: Protects against brute-force attempts on SSH and Nginx.
+#+begin_src bash
+sudo apt install fail2ban
+#+end_src
+*** TODO Automatic security updates:
+#+begin_src bash
+sudo apt install unattended-upgrades
+#+end_src
+** ✅ 5. Monitoring & Logging [/]
+*** TODO Enable logging in Gunicorn (--access-logfile - already done).
+*** TODO Rotate logs with logrotate.
+*** TODO Monitor Nginx and Gunicorn with systemctl status and journalctl -u ....
+👉 If you apply the above, you’ll have a secure, production-grade Django deployment.
+Would you like me to generate ready-to-use systemd + nginx configs with these hardening options already baked in? That way you can drop them into place instead of tweaking line by line.
+
+** Here’s how I’d suggest you proceed step by step, so you don’t get overwhelmed:
+
+🔐 Step 1 — Django settings
+Start with:
+DEBUG = False
+Proper ALLOWED_HOSTS (domain or IP).
+Add the secure cookie flags (SESSION_COOKIE_SECURE, etc.).
+These only take effect once HTTPS is working, but no harm enabling them now.
+🛡 Step 2 — Gunicorn
+Open your service file and check:
+User=att (✅ you already have this).
+Add some sane defaults for workers, threads, and timeouts.
+Make sure the socket lives in /run/ and permissions are restricted to www-data.
+🔒 Step 3 — Nginx
+In your server block:
+Add client_max_body_size 10M;.
+Add the security headers one by one.
+For now, keep it listening on port 80. After Certbot, you’ll add SSL/TLS config and the HTTP→HTTPS redirect.
+🔥 Step 4 — System
+Enable UFW (sudo ufw allow OpenSSH && sudo ufw allow 'Nginx Full' && sudo ufw enable).
+Install fail2ban.
+Enable unattended-upgrades.
+✅ Step 5 — Verification
+After each edit:
+Restart the service (sudo systemctl restart gunicorn_att, sudo systemctl restart nginx).
+Check logs (journalctl -u gunicorn_att, journalctl -u nginx).
+Test locally with curl -I http://127.0.0.1.
+👉 Once all that is in place and stable, then we move to Certbot + HTTPS.
