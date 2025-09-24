@@ -32,7 +32,7 @@
             </div>
             <div class="columns is-mobile is-1-mobile is-2-tablet is-3-desktop">
                 <div class="column is-half">
-                    <a class="button is-fullwidth" href="{% url 'att:lessons-today' %}">
+                    <a class="button is-fullwidth" href="{% url 'att:student-on-day' student_id=student.id year=today.year month=today.month day=today.day %}">
                         📅 Today
                     </a>
                 </div>

@@ -277,7 +277,8 @@ def student_on_day(request, student_id, year, month, day):
         "attendance_records": attrecords,
         "day": day,
         "previous_day": day - timedelta(days=1),
-        "next_day": day + timedelta(days=1)
+        "next_day": day + timedelta(days=1),
+        "today": timezone.localdate()
     }
     return render(request, "att/student_on_day.html", context)
 
