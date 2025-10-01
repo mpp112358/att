@@ -33,6 +33,18 @@
             }
           */
 
+         @media only screen and (max-width: 600px) {
+             .list-section {
+                 padding: 0 2% 0 2%;
+             }
+         }
+
+         @media only screen and (min-width: 600px) {
+             .list-section {
+                 padding: 2% 2% 2% 2%;
+             }
+         }
+
          .att-button{
              margin: 1%;
          }
@@ -49,7 +61,6 @@
 
          #students-list {
              height: 80vh;
-             padding: 0;
          }
 
          .attendance-scroll-container {
@@ -146,7 +157,27 @@
          header.top-navbar {
              position: sticky;
              top: 0;
+             bottom: 0;
              opacity: 100%;
+         }
+
+         .button.is-multiline {
+             white-space: normal;
+             height: 100%;           /* stretch to full column height */
+             line-height: 1.2;
+             text-align: center;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+         }
+
+         .is-sticky {
+             display: flex;
+             align-items: center;
+             position: sticky;
+             top: 0;                 /* stick to the top of the viewport */
+             z-index: 10;            /* make sure it stays above other content */
+             border-bottom: 1px solid #ddd; /* optional visual separator */
          }
 
         </style>
@@ -170,7 +201,7 @@
                         Lessons
                     </a>
                     <a class="navbar-item" href="{% url 'att:select-student' %}">
-                        <span class="icon"><i class="fa-regular fa-chalkboard-user"></i></span>
+                        <span class="icon"><i class="fa-solid fa-chalkboard-user"></i></span>
                         Students
                     </a>
                 </div>

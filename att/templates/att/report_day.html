@@ -3,7 +3,7 @@
 {% block title %}Daily report{% endblock %}
 
 {% block content %}
-    <section id="attendance-list" class="section is-flex is-flex-direction-column">
+    <section id="attendance-list" class="section is-flex is-flex-direction-column list-section">
 
         <div class="block">
             <div id="attendance-list-header">
@@ -43,20 +43,22 @@
 
 
         <div id="lessons-list-container" class="attendance-scroll-container" style="max-height: 65vh;">
-            <div class="student-period-table">
-                <div>
+            <div class="buttons student-period-table">
+                <button class="button is-sticky is-fullwidth is-justify-content-flex-start is-size-7-mobile">
                     Student
-                </div>
+                </button>
                 {% for period in periods %}
-                    <div>
-                        <button class="button is-fullwidth is-link is-size-7-mobile" style="width: 100%;">
-                            {{ period.start_time|date:"H:i" }}
+                    <div class="is-sticky">
+                        <button class="button is-fullwidth is-link is-size-7-mobile">
+                            <!-- <span class="is-hidden-tablet">{{ period.id }}</span> -->
+                            <!-- <span class="is-hidden-mobile">{{ period.start_time|date:"H:i" }}</span> -->
+                            <span>{{ period.start_time|date:"H:i" }}</span>
                         </button>
                     </div>
                 {% endfor %}
                 {% for student in attendance_records %}
                     <div>
-                        <a class="button is-fullwidth is-justify-content-flex-start is-size-7-mobile" href="{% url 'att:student-on-day' student.student.id date.year date.month date.day %}">
+                        <a class="button is-multiline is-fullwidth is-justify-content-flex-start is-size-7-mobile" href="{% url 'att:student-on-day' student.student.id date.year date.month date.day %}">
                             {{ student.student.last_name }}, {{ student.student.first_name }}
                         </a>
                     </div>
@@ -68,13 +70,16 @@
                                         data-lesson-id="{{ attendance_record.0.lesson.id }}"
                                         data-period-id="{{ attendance_record.0.lesson.period.id }}"
                                         data-attendance_record-status="{{ attendance_record.0.status }}">
-                                    <span class="icon is-size-6-mobile is-size-6-tablet">
+                                    <span class="icon is-size-7-mobile is-size-6-tablet">
                                         <i id="icon-{{ student.student.id }}-{{ attendance_record.0.lesson.period.id }}" class="fa-solid">
                                         </i>
                                     </span>
                                 </button>
                             {% else %}
-                                <button class="button is-fullwidth" disabled>No lesson</button>
+                                <button class="button is-fullwidth" disabled>
+                                    <span class="is-hidden-tablet">--</span>
+                                    <span class="is-hidden-mobile">No lesson</span>
+                                </button>
                             {% endif %}
                         </div>
                     {% empty %}

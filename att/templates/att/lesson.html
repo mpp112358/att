@@ -3,9 +3,8 @@
 {% block title %}Lesson details{% endblock %}
 
 {% block content %}
-    <section id="students-list" class="section is-flex is-flex-direction-column">
-            <div id="students-list-header" class="box">
-                <div class="columns">
+    <section id="students-list" class="section is-flex is-flex-direction-column list-section" style="height: 90vh;">
+            <div class="columns">
                     <div class="column">
                         <div class="lesson-detail-block">
                             <a class="button is-link is-fullwidth" href="{% url 'att:lessons-on-day' year=lesson.date.year month=lesson.date|date:'b' day=lesson.date.day %}">
@@ -48,19 +47,20 @@
                             <form method="post" action="{% url 'att:mark-unregistered-present' %}">
                                 {% csrf_token %}
                                 <input class="invisible" name="lessonId" value="{{ lesson.id }}"\>
-                                <button id="mark-unregistered-present-button" type="submit" class="button is-success is-fullwidth is-size-4-tablet is-size-5-mobile" action="">
-                                    Mark unregistered present
+                                <button id="mark-unregistered-present-button" type="submit" class="button is-success is-inverted is-fullwidth is-size-4-tablet is-size-5-mobile" action="">
+                                    <span class="icon"><i class="fa-solid fa-users"></i></span>
+                                    <span>All remaining are present</span>
+                                    <span class="icon"><i class="fa-solid fa-check"></i></span>
                                 </button>
                             </form>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="columns px-4 attendance-scroll-container">
+        <div class="columns px-2 attendance-scroll-container">
                 <div class="column">
                     {% for attendance_record in attendance_records %}
-                        <div class="field has-addons"">
-                            <div class="control" style="width: 100%; max-width= 100vh;">
+                        <div class="field has-addons">
+                            <div class="control" style="width: 100%; max-width=100vw;">
                                 <button class="button is-justify-content-flex-start is-fullwidth is-size-6-mobile is-size-4-tablet attendance-button"
                                         data-student-id="{{ attendance_record.student.id }}"
                                         data-attendance_record-status="{{ attendance_record.status }}">

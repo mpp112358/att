@@ -33,6 +33,7 @@ class Teacher(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
+    landing_url = models.CharField(max_length=100, db_default="lessons-today")
 
     @property
     def full_name(self):

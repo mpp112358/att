@@ -3,7 +3,7 @@
 {% block title %}Teacher's Lessons on Day{% endblock %}
 
 {% block content %}
-    <section id="lessons-list" class="section is-flex is-flex-direction-column">
+    <section id="lessons-list" class="section is-flex is-flex-direction-column list-section">
 
         <div class="block">
         <div id="lessons-list-header">
@@ -41,7 +41,7 @@
         </div>
         </div>
 
-        <div id="lessons-list-container" class="attendance-scroll-container" style="max-height: 65vh;">
+        <div id="lessons-list-container" class="attendance-scroll-container" style="max-height: 80vh;">
             {% if lessons_list %}
                 {% for period, lesson in lessons_by_period %}
                     <div class="columns is-mobile is-1-mobile lesson-row" style="margin-bottom: 5px;">

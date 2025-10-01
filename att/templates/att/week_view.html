@@ -4,8 +4,7 @@
 
 {% block content %}
 
-    <section class="section is-flex is-flex-direction-column" style="height: 95vh;">
-        <div class="box">
+    <section class="section is-flex is-flex-direction-column list-section" style="height: 92vh;">
             <div class="field">
                 <div class="control">
                     <button class="button is-fullwidth is-info">{{ teacher.last_name }}, {{ teacher.first_name }}</button>
@@ -34,7 +33,6 @@
                     </a>
                 </div>
             </div>
-        </div>
 
         <div class="columns is-1-mobile is-1-desktop attendance-scroll-container">
             {% for day, lessons in lessons_by_day %}
