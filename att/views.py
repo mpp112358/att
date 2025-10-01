@@ -13,6 +13,7 @@ from django.db.models import Count, F, Value, Q
 from django.db.models.functions import Concat
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
+from django.urls import reverse
 
 from datetime import date, time, timedelta, datetime
 import json
@@ -184,7 +185,10 @@ def landing_view(request):
         teacher = Teacher.objects.get(user=loggedin_user)
     except:
         return render(request, "att/unauthorised.html")
-    return HttpResponseRedirect("/att/today")
+    if teacher.landing_url:
+        return HttpResponseRedirect(reverse(f"att:{teacher.landing_url}"))
+    else:
+        return HttpResponseRedirect(reverse("att:lessons-today"))
 
 class LessonsOnDay(LoginRequiredMixin, DayArchiveView):
     """View list of lesson on 'date'"""
